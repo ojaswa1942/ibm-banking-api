@@ -1,33 +1,13 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { secrets } = require('../utils/config');
+class AccountService {
+  static createAccount = async (args, context) => {
 
-class AuthService {
-  static login = async (args, context) => {
-    const { username, password } = args;
-    const { db, logger } = context;
-
-    const authUser = await db.collection(`auth`).findOne({ username });
-    if (!authUser) return { success: false, error: `Incorrect Credentials` };
-
-    const match = await bcrypt.compare(password, authUser.password);
-    if (!match) return { success: false, error: `Incorrect Credentials` };
-
-    const payload = {
-      userEmail: username,
-    };
-    const token = jwt.sign(payload, secrets.jwt, {
-      expiresIn: '10d',
-    });
-
-    logger(`[LOGIN]`, payload.userEmail);
-
-    return { success: true, body: { message: 'Logged in', token } };
   };
 
-  static signup = async (args, context) => {
-    const { username, password } = args;
-    const { db, logger, userEmail } = context;
+  static getInformationByNumber = async (args, context) => {
+    const { accountNumber } = args;
+    const { models, logger, userEmail } = context;
+
+    const { Account } = models;
 
     const authUser = await db.collection(`auth`).findOne({ username });
     if (authUser) return { success: false, error: `User already exists` };
@@ -40,6 +20,16 @@ class AuthService {
 
     return { success: true, body: { message: 'Signed up' } };
   };
+
+
+  static findAccounts = async (args, context) => {
+    // find by name or email
+  };
+
+  static transferFunds = async (args, context) => {
+    // transaction
+  };
+
 }
 
-module.exports = AuthService;
+module.exports = AccountService;
