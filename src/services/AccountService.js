@@ -5,10 +5,9 @@ const { secrets } = require('../utils/config');
 class AuthService {
   static login = async (args, context) => {
     const { username, password } = args;
-    const { logger, models } = context;
-    const { Admin } = models;
+    const { db, logger } = context;
 
-    const authUser = await Admin.findOne({ username });
+    const authUser = await db.collection(`auth`).findOne({ username });
     if (!authUser) return { success: false, error: `Incorrect Credentials` };
 
     const match = await bcrypt.compare(password, authUser.password);
@@ -28,17 +27,16 @@ class AuthService {
 
   static signup = async (args, context) => {
     const { username, password } = args;
-    const { models, logger, userEmail } = context;
-    const { Admin } = models;
+    const { db, logger, userEmail } = context;
 
-    const authUser = await Admin.findOne({ username });
+    const authUser = await db.collection(`auth`).findOne({ username });
     if (authUser) return { success: false, error: `User already exists` };
 
     const hash = await bcrypt.hash(password, 10);
 
-    await Admin.create({ username, password: hash });
+    await db.collection(`auth`).insertOne({ username, password: hash });
 
-    logger({ type: `warning` }, `[SIGNUP]`, username, `by: ${userEmail}`);
+    logger({ type: `warning` }, `[SIGNUP]`, { username, by: userEmail });
 
     return { success: true, body: { message: 'Signed up' } };
   };

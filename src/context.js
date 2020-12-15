@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
 const { secrets } = require('./utils/config');
 const logger = require('./utils/logger');
+const models = require('./models');
 
-const provideContext = async (req, res, next, db) => {
+const provideContext = async (req, res, next) => {
   const context = {
-    db,
+    models,
     logger,
     userEmail: null,
     isAuthenticated: false,
