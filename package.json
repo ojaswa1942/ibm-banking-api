@@ -1,0 +1,52 @@
+{
+  "name": "ibm-banking-api",
+  "version": "1.0.0",
+  "description": "An API for facilitating banking services",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "lint-staged": {
+    "src/**/*.js": [
+      "eslint --fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint-staged"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ojaswa1942/ibm-banking-api.git"
+  },
+  "keywords": [],
+  "author": "Ojaswa Sharma <https://github.com/ojaswa1942>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ojaswa1942/ibm-banking-api/issues"
+  },
+  "homepage": "https://github.com/ojaswa1942/ibm-banking-api#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "chalk": "^4.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.11.8",
+    "xss": "^1.0.8"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.15.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.0",
+    "husky": "^4.3.6",
+    "lint-staged": "^10.5.3",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.2.1"
+  }
+}
