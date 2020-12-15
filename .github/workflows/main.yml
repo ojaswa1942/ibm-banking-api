@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@master
+        with:
+          node-version: 13.12
+
+      - name: Save key
+        env:
+          ACCESS_KEY: ${{ secrets.OPS_KEY_ENC }}
+        run: |
+          echo "$ACCESS_KEY" | base64 -d > $HOME/KEY
+          chmod 400 $HOME/KEY
+  
+      - name: Save environment vars
+        env:
+          ENV_FILE: ${{ secrets.ENV }}
+        run: echo "$ENV_FILE" | base64 -d > $HOME/.env
+    
+
+      - name: Deploy to server
+        run: |
+          scp -r -i "$HOME/KEY" -o StrictHostKeyChecking=no ./src ops@url.ojaswa.com:/var/www/devfolio/
+          scp -r -i "$HOME/KEY" -o StrictHostKeyChecking=no $HOME/.env ops@url.ojaswa.com:/var/www/devfolio/
+          scp -r -i "$HOME/KEY" -o StrictHostKeyChecking=no ./package.json ops@url.ojaswa.com:/var/www/devfolio/
+
+      - name: Install dependencies
+        run: |
+          ssh -i "$HOME/KEY" -o StrictHostKeyChecking=no ops@url.ojaswa.com "cd /var/www/devfolio/; yarn install --production"

@@ -1,7 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
+// const mongoose = require('mongoose');
+
+const routes = require('./routes');
+
+const { port } = require('./utils/config');
+const logger = require('./utils/logger');
 
 const app = express();
 
@@ -9,8 +14,14 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', (req, res) => res.sendStatus(200));
+try {
+  app.get('/', (req, res) => res.sendStatus(200));
+  app.use('/api', routes);
+} catch (error) {
+  logger({ type: `ERROR` }, `Unhandled Exeption@server.js`);
+  logger({ type: `ERROR` }, error);
+}
 
-app.listen(3013, () => {
-  console.log(`Running on port ${3013}`);
+app.listen(port, () => {
+  console.log(`Running on port ${port}`);
 });
