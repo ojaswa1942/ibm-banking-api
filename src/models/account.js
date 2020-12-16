@@ -24,6 +24,7 @@ const Account = new Schema({
   email: {
     type: String,
     index: true,
+    required: true,
   },
 });
 
