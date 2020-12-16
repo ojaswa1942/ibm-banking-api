@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 const { PORT, DBHOST, DBUSER, DBNAME, DBPASSWORD, JWT_SECRET } = process.env;
-
+console.log(DBHOST);
 module.exports = {
   port: PORT || 3013,
   db: {
-    uri: `mongodb+srv://${DBUSER}:${DBPASSWORD}@${DBHOST}/${DBNAME}?retryWrites=true&w=majority`,
+    uri: `mongodb://${DBUSER}:${DBPASSWORD}@${DBHOST}/${DBNAME}?authSource=${DBNAME}&retryWrites=true&w=majority`,
     database: DBNAME,
     options: {
       useNewUrlParser: true,

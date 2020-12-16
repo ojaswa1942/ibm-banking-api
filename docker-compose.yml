@@ -15,7 +15,6 @@ services:
       - "3013:3013"
   mongo:
       image: mongo
-      command: --smallfiles
       env_file:
         - .env
       environment:
@@ -24,6 +23,6 @@ services:
         - MONGO_INITDB_DATABASE
  
       ports:
-        - 27017:27017
+        - 27000:27017
       volumes:
         - ./db.init.js:/docker-entrypoint-initdb.d/init.js:ro
