@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.4"
 services:
   api:
     build: 
@@ -14,15 +14,20 @@ services:
     ports:
       - "3013:3013"
   mongo:
-      image: mongo
+      image: mongo:latest
       env_file:
         - .env
       environment:
         - MONGO_INITDB_ROOT_USERNAME
         - MONGO_INITDB_ROOT_PASSWORD
         - MONGO_INITDB_DATABASE
- 
+        - MONGO_REPLICA_SET_NAME
       ports:
         - 27000:27017
       volumes:
         - ./db.init.js:/docker-entrypoint-initdb.d/init.js:ro
+      healthcheck:
+        test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
+        interval: 10s
+        start_period: 30s
+      command: ["--replSet", "${MONGO_REPLICA_SET_NAME}", "--bind_ip_all"]

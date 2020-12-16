@@ -1,4 +1,9 @@
 try {
+	rs.initiate();
+} catch(e) {
+	console.log(e);
+}
+try {
 	db.createUser({
 	  user: "ibmuser",
 	  pwd: "VWY8n3K7L8DvWUhx",

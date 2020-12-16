@@ -15,18 +15,18 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-try {
-  mongoose.connect(dbConfig.uri, dbConfig.options);
+mongoose.connect(dbConfig.uri, dbConfig.options).then(() => {
+  try {
+    app.use(provideContext);
 
-  app.use(provideContext);
+    app.get('/', (req, res) => res.sendStatus(200));
+    app.use('/api', routes);
+  } catch (error) {
+    logger({ type: `ERROR` }, `Unhandled Exception@server.js`);
+    logger({ type: `ERROR` }, error);
+  }
 
-  app.get('/', (req, res) => res.sendStatus(200));
-  app.use('/api', routes);
-} catch (error) {
-  logger({ type: `ERROR` }, `Unhandled Exception@server.js`);
-  logger({ type: `ERROR` }, error);
-}
-
-app.listen(port, () => {
-  console.log(`Running on port ${port}`);
+  app.listen(port, () => {
+    console.log(`Running on port ${port}`);
+  });
 });
