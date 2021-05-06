@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  PORT: "3013"
+  MONGO_REPLICA_SET_NAME: rs0
+  DBNAME: ibm
+  DBHOST: mongo

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels: 
+    app: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api 
+  template: 
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: ojaswa1942/ibm-banking-api:latest
+        ports:
+        - containerPort: 3013
+        envFrom:
+        - configMapRef:
+            name: config
+        - secretRef:
+            name: secret
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  rules:  # Forwarding routing rules 
+  -  http:   
+      paths:  # URL Path /backend
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: api  # service name
+            port:
+              number: 3013
