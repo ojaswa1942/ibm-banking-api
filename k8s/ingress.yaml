@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  rules:  # Forwarding routing rules 
+  -  http:   
+      paths:  # URL Path /backend
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: api  # service name
+            port:
+              number: 3013

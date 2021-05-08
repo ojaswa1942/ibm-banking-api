@@ -1,20 +1,57 @@
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
+# This uses an ephemeral volume, which os desired
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  labels: 
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template: 
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo
+        ports:
+        - containerPort: 27017
+        envFrom:
+        - configMapRef:
+            name: config
+        - secretRef:
+            name: secret
+        volumeMounts:
+        - name: config-dir
+          mountPath: "/docker-entrypoint-initdb.d/"
+        # args: ["--replSet", "$MONGO_REPLICA_SET_NAME"]
+      initContainers:
+      - name: add-config
+        image: busybox
+        command:
+        - wget
+        - "https://raw.githubusercontent.com/ojaswa1942/ibm-banking-api/master/db.init.js"
+        - "-O"
+        - "/data/db.init.js"
+        volumeMounts:
+        - name: config-dir
+          mountPath: "/data"
+      volumes:
+      - name: config-dir
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
 metadata:
   name: mongo
 spec:
-  version: "4.2.3"
-  replicas: 1
-  replicaSet:
-    name: rs0
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: mg-init-script
+  selector:
+    app: mongo 
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017 
