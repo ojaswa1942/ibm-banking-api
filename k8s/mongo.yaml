@@ -15,6 +15,30 @@ spec:
       labels:
         app: mongo
     spec:
+      initContainers:
+      - name: copy-key
+        image: busybox
+        command: 
+          - /bin/sh
+          - "-c"
+          - |
+            # echo '1. get init.js';
+            # wget https://raw.githubusercontent.com/ojaswa1942/ibm-banking-api/master/db.init.js -O /data/db.init.js;
+            # ls -la /shared-secrets;
+            # cat /shared-secrets/key;
+            # echo done;
+            cp /shared-secrets/key /shared-secrets-data/key;
+            chown 999:999 /shared-secrets-data/key;
+            chmod 400 /shared-secrets-data/key;
+        volumeMounts:
+        - name: mongo-shared-key
+          mountPath: "/shared-secrets"
+        - name: mongo-shared-key-data
+          mountPath: "/shared-secrets-data"
+      # securityContext:
+      #   fsGroup: 999
+      #   runAsUser: 0
+      #   runAsGroup: 0
       containers:
       - name: mongo
         image: mongo
@@ -26,23 +50,46 @@ spec:
         - secretRef:
             name: secret
         volumeMounts:
-        - name: config-dir
+        - name: init-scripts
           mountPath: "/docker-entrypoint-initdb.d/"
-        # args: ["--replSet", "$MONGO_REPLICA_SET_NAME"]
-      initContainers:
-      - name: add-config
-        image: busybox
-        command:
-        - wget
-        - "https://raw.githubusercontent.com/ojaswa1942/ibm-banking-api/master/db.init.js"
-        - "-O"
-        - "/data/db.init.js"
-        volumeMounts:
-        - name: config-dir
-          mountPath: "/data"
+        - name: mongo-shared-key-data
+          mountPath: "/shared-secrets"
+          readOnly: true
+        # lifecycle:
+        #   postStart:
+        #     exec:
+        #       command:
+        #       - bash
+        #       - -c
+        #       - cp /shared-secrets/key /data/key; 
+        #       - chown mongodb /data/key;
+        #       - chmod 400 /data/key
+        args: [
+          "--replSet", 
+          "$MONGO_REPLICA_SET_NAME", 
+          "--bind_ip_all", 
+          "--keyFile",  
+          "/shared-secrets/key",
+          "--setParameter",
+          "authenticationMechanisms=SCRAM-SHA-1"
+        ]
+        # livenessProbe:
+        #   exec:
+        #     command:
+        #       - test $$(echo "rs.initiate().ok || rs.status().ok" | mongo -u $${MONGO_INITDB_ROOT_USERNAME} -p $${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 20
+
       volumes:
-      - name: config-dir
+      - name: init-scripts
+        configMap:
+          name: db-init
+      - name: mongo-shared-key-data
         emptyDir: {}
+      - name: mongo-shared-key
+        secret:
+          secretName: mongo-key-secret
+          defaultMode: 0400
 ---
 apiVersion: v1
 kind: Service

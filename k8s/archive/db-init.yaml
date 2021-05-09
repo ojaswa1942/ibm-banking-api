@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: db-init
+  name: mg-init-script
 data:
   db-init.js: |
     try {
       rs.initiate();
     } catch(e) {
-      console.log("Error from rs.initiate", e);
+      console.log(e);
     }
 
     try {

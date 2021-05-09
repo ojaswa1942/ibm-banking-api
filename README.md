@@ -31,3 +31,7 @@ Kindly refer to the [API Documentation](https://documenter.getpostman.com/view/4
 	- Get account details by account number
 	- Search for all accounts by matching name and/or email
 	- Transfer money from one account to another (source, destination, amount)
+
+### Notes for reference
+- Mongo Replicasets require a pre-shared key between each replica instance or authorization. However, I've noticed that it was not required when setting up via docker-compose, and only seem to be essential in a certain case, which I could not yet identify.
+
