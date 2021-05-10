@@ -9,16 +9,21 @@ const {
   DBPASSWORD,
   JWT_SECRET,
 } = process.env;
-console.log(DBHOST);
+
+const connectionURI = `mongodb://${DBUSER}:${DBPASSWORD}@${DBHOST}/${DBNAME}?authSource=${DBNAME}&retryWrites=true&w=majority&replicaSet=${MONGO_REPLICA_SET_NAME}`;
+// const connectionURI = `mongodb://${DBUSER}:${DBPASSWORD}@${DBHOST}/${DBNAME}?authSource=${DBNAME}`;
+
+console.log(connectionURI);
+
 module.exports = {
   port: PORT || 3013,
   db: {
-    uri: `mongodb://${DBUSER}:${DBPASSWORD}@${DBHOST}/${DBNAME}?authSource=${DBNAME}&retryWrites=true&w=majority&replicaSet=${MONGO_REPLICA_SET_NAME}`,
+    uri: connectionURI,
     database: DBNAME,
     options: {
       useNewUrlParser: true,
       useCreateIndex: true,
-      useUnifiedTopology: true,
+      // useUnifiedTopology: true,
       useFindAndModify: false,
     },
   },

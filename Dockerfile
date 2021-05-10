@@ -11,4 +11,4 @@ RUN yarn
 
 EXPOSE 3013
 
-ENTRYPOINT ["yarn", "start"] 
+ENTRYPOINT ["yarn", "prod"] 
