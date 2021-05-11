@@ -10,6 +10,6 @@ spec:
         pathType: Prefix
         backend:
           service: 
-            name: api  # service name
+            name: api-service  # service name
             port:
               number: 3013

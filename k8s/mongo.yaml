@@ -1,20 +1,43 @@
-# This uses an ephemeral volume, which os desired
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  clusterIP: None # Since replicasets connect to particular pods (with identitites: statefulset)
+  selector:
+    app: mongo 
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017 
+---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongo
   labels: 
     app: mongo
 spec:
   replicas: 1
+  serviceName: mongo-service
   selector:
     matchLabels:
       app: mongo
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-persistance-storage-claim
+    spec:
+      storageClassName: "standard" # default for minikubes
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Mi
   template: 
     metadata:
       labels:
         app: mongo
     spec:
+      terminationGracePeriodSeconds: 15
       initContainers:
       - name: copy-key
         image: busybox
@@ -22,28 +45,16 @@ spec:
           - /bin/sh
           - "-c"
           - |
-            # echo '1. get init.js';
-            # wget https://raw.githubusercontent.com/ojaswa1942/ibm-banking-api/master/db.init.js -O /data/db.init.js;
-            # ls -la /shared-secrets;
-            # cat /shared-secrets/key;
-            # echo done;
             cp /shared-secrets/key /shared-secrets-data/key;
             chown 999:999 /shared-secrets-data/key;
             chmod 400 /shared-secrets-data/key;
-            chown -R 999:999 /data;
         volumeMounts:
         - name: mongo-shared-key
           mountPath: "/shared-secrets"
         - name: mongo-shared-key-data
           mountPath: "/shared-secrets-data"
-        - name: mongo-data
-          mountPath: "/data"
-      # securityContext:
-      #   fsGroup: 999
-      #   runAsUser: 0
-      #   runAsGroup: 0
       containers:
-      - name: mongo
+      - name: mongo-container
         image: mongo
         ports:
         - containerPort: 27017
@@ -58,17 +69,8 @@ spec:
         - name: mongo-shared-key-data
           mountPath: "/shared-secrets"
           readOnly: true
-        - name: mongo-data
-          mountPath: /data
-        # lifecycle:
-        #   postStart:
-        #     exec:
-        #       command:
-        #       - bash
-        #       - -c
-        #       - cp /shared-secrets/key /data/key; 
-        #       - chown mongodb /data/key;
-        #       - chmod 400 /data/key
+        - name: mongo-persistance-storage-claim
+          mountPath: /data/db
         args: [
           "--replSet", 
           "$(MONGO_REPLICA_SET_NAME)", 
@@ -79,13 +81,7 @@ spec:
           "--setParameter",
           "authenticationMechanisms=SCRAM-SHA-1"
         ]
-        # livenessProbe:
-        #   exec:
-        #     command:
-        #       - test $(echo "rs.initiate().ok || rs.status().ok" | mongo -u ${MONGO_INITDB_ROOT_USERNAME} -p ${MONGO_INITDB_ROOT_PASSWORD} --quiet) -eq 1
-        #   initialDelaySeconds: 10
-        #   timeoutSeconds: 3
-        #   periodSeconds: 20
+
       volumes:
       - name: init-scripts
         configMap:
@@ -96,17 +92,3 @@ spec:
         secret:
           secretName: mongo-key-secret
           defaultMode: 0400
-      - name: mongo-data
-        emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongo-service
-spec:
-  selector:
-    app: mongo 
-  ports:
-    - protocol: TCP
-      port: 27017
-      targetPort: 27017 

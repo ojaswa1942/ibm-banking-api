@@ -6,4 +6,4 @@ data:
   PORT: "3013"
   MONGO_REPLICA_SET_NAME: rs0
   DBNAME: ibm
-  DBHOST: "mongo-service.default.svc.cluster.local:27017"
+  DBHOST: "mongo-0.mongo-service.default.svc.cluster.local:27017"
