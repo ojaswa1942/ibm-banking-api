@@ -35,3 +35,8 @@ Kindly refer to the [API Documentation](https://documenter.getpostman.com/view/4
 ### Notes for reference
 - Mongo Replicasets require a pre-shared key between each replica instance or authorization. However, I've noticed that it was not required when setting up via docker-compose, and only seem to be essential in a certain case, which I could not yet identify.
 
+- Initiating the Mongo Replicaset (in mongo-0):
+```
+mongo -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD eval 'rs.initiate({_id: "rs0", version: 1, members: [ {_id: 0, host: "mongo-0.mongo-service.default.svc.cluster.local:27017"} ] });'
+```
+(Members can be added in accordance with the number of replicas)
